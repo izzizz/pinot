@@ -17,6 +17,10 @@ package com.linkedin.pinot.tools.admin.command;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.args4j.Option;
@@ -100,7 +104,7 @@ public class UploadSegmentCommand extends AbstractBaseCommand implements Command
     File[] files = dir.listFiles();
 
     for (File file : files) {
-      if (!file.isDirectory()) {
+      if (!file.isDirectory() || isDirEmpty(file.toPath())) {
         continue;
       }
 
@@ -115,5 +119,11 @@ public class UploadSegmentCommand extends AbstractBaseCommand implements Command
     }
 
     return true;
+  }
+
+  private static boolean isDirEmpty(final Path directory) throws IOException {
+    try(DirectoryStream<Path> dirStream = Files.newDirectoryStream(directory)) {
+      return !dirStream.iterator().hasNext();
+    }
   }
 }
