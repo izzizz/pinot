@@ -60,6 +60,7 @@ import com.linkedin.pinot.core.segment.creator.impl.fwd.MultiValueUnsortedForwar
 import com.linkedin.pinot.core.segment.creator.impl.fwd.SingleValueSortedForwardIndexCreator;
 import com.linkedin.pinot.core.segment.creator.impl.fwd.SingleValueUnsortedForwardIndexCreator;
 import com.linkedin.pinot.core.segment.creator.impl.inv.BitmapInvertedIndexCreator;
+import org.apache.commons.lang.ArrayUtils;
 
 
 /**
@@ -169,9 +170,10 @@ public class SegmentColumnarIndexCreator implements SegmentCreator {
           invertedIndexCreatorMap.get(column).add(docIdCounter, dictionaryIndex);
         }
       } else {
-        int[] dictionaryIndex = dictionaryCreatorMap.get(column).indexOfMV(columnValueToIndex);
-        ((MultiValueForwardIndexCreator)forwardIndexCreatorMap.get(column)).index(docIdCounter, dictionaryIndex);
+        int[] indexes = dictionaryCreatorMap.get(column).indexOfMV(columnValueToIndex);
+        ((MultiValueForwardIndexCreator)forwardIndexCreatorMap.get(column)).index(docIdCounter, indexes);
 
+        Integer[] dictionaryIndex = ArrayUtils.toObject(indexes);
         // TODO : {refactor inverted index addition}
         if (invertedIndexCreatorMap.containsKey(column)) {
           invertedIndexCreatorMap.get(column).add(docIdCounter, dictionaryIndex);

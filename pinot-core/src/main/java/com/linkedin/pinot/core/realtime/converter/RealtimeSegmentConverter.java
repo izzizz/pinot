@@ -17,6 +17,7 @@ package com.linkedin.pinot.core.realtime.converter;
 
 import java.io.File;
 
+import com.linkedin.pinot.common.config.IndexingConfig;
 import com.linkedin.pinot.common.data.Schema;
 import com.linkedin.pinot.common.data.TimeFieldSpec;
 import com.linkedin.pinot.common.data.TimeGranularitySpec;
@@ -35,6 +36,7 @@ public class RealtimeSegmentConverter {
   private String tableName;
   private String segmentName;
   private String sortedColumn;
+  private IndexingConfig indexingConfig;
 
   public RealtimeSegmentConverter(RealtimeSegmentImpl realtimeSegment, String outputPath, Schema schema,
       String tableName, String segmentName, String sortedColumn) {
@@ -63,7 +65,11 @@ public class RealtimeSegmentConverter {
     this.dataSchema = newSchema;
     this.sortedColumn = sortedColumn;
   }
-
+  public RealtimeSegmentConverter(RealtimeSegmentImpl realtimeSegment, String outputPath, Schema schema,
+                                  String tableName, String segmentName, String sortedColumn, IndexingConfig indexingConfig) {
+    this(realtimeSegment, outputPath, schema, tableName, segmentName, sortedColumn);
+    this.indexingConfig = indexingConfig;
+  }
   public void build() throws Exception {
     // lets create a record reader
     RecordReader reader;
@@ -83,6 +89,11 @@ public class RealtimeSegmentConverter {
     genConfig.setTableName(tableName);
     genConfig.setIndexOutputDir(outputPath);
     genConfig.setSegmentName(segmentName);
+    if (indexingConfig != null) {
+      for (String column : indexingConfig.getInvertedIndexColumns()) {
+        genConfig.createInvertedIndexForColumn(column);
+      }
+    }
     final SegmentIndexCreationDriverImpl driver = new SegmentIndexCreationDriverImpl();
     driver.init(genConfig, reader);
     driver.build();

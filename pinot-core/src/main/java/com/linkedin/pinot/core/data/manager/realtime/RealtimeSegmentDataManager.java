@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import com.linkedin.pinot.common.config.IndexingConfig;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,7 @@ public class RealtimeSegmentDataManager implements SegmentDataManager {
   private Thread indexingThread;
   
   private final String sortedColumn;
+  private final IndexingConfig indexingConfig;
 
   public RealtimeSegmentDataManager(final RealtimeSegmentZKMetadata segmentMetadata,
       final AbstractTableConfig tableConfig, InstanceZKMetadata instanceMetadata,
@@ -86,6 +88,7 @@ public class RealtimeSegmentDataManager implements SegmentDataManager {
         this.sortedColumn = null;
       }
     }
+    this.indexingConfig = tableConfig.getIndexingConfig();
     this.segmentMetatdaZk = segmentMetadata;
     this.segmentName = segmentMetadata.getSegmentName();
 
@@ -138,7 +141,7 @@ public class RealtimeSegmentDataManager implements SegmentDataManager {
         // lets convert the segment now
         RealtimeSegmentConverter conveter =
             new RealtimeSegmentConverter((RealtimeSegmentImpl) realtimeSegment, tempSegmentFolder.getAbsolutePath(),
-                schema, segmentMetadata.getTableName(), segmentMetadata.getSegmentName(), sortedColumn);
+                schema, segmentMetadata.getTableName(), segmentMetadata.getSegmentName(), sortedColumn, indexingConfig);
         try {
           LOGGER.info("Trying to build segment!");
           conveter.build();
